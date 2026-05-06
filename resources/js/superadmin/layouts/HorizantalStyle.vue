@@ -24,6 +24,7 @@
 			</a-layout-header>
 		</MainHeader>
 		<a-layout-content>
+			
 			<MainContentArea :cssSettings="cssSettings">
 				<router-view></router-view>
 			</MainContentArea>

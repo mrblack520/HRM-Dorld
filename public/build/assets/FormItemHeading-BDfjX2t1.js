@@ -1,1 +1,0 @@
-import{_ as r,c as a,g as e,w as s,F as _,o as p,r as c}from"./app-CqPk7X3t.js";import{T as l}from"./Title-D0sraZtB.js";import{_ as m}from"./index-Di5d_p4s.js";const i={};function d(t,f,u,x,g,$){const o=l,n=m;return p(),a(_,null,[e(o,{level:5},{default:s(()=>[c(t.$slots,"default")]),_:3}),e(n,{style:{margin:"0px 0px 20px 0px"}})],64)}const k=r(i,[["render",d]]);export{k as F};
