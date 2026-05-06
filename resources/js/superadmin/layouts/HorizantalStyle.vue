@@ -18,7 +18,6 @@
 						<MainMenus />
 					</a-col>
 					<a-col :span="3">
-						
 						<MenuMode />
 					</a-col>
 				</a-row>

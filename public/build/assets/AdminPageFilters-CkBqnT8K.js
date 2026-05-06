@@ -1,0 +1,1 @@
+import{_ as o,d as s,c as t,o as n,r as a,n as r,a as d}from"./app-CqPk7X3t.js";const c=s({setup(){const{themeMode:e}=d();return{themeMode:e}}});function p(e,l,m,f,i,u){return n(),t("div",{style:r({padding:"10px 16px",background:e.themeMode=="dark"?"#141414":"#fff"}),class:"mb-20"},[a(e.$slots,"default")],4)}const $=o(c,[["render",p]]);export{$ as default};
