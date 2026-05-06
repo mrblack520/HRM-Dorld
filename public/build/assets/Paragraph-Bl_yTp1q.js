@@ -1,0 +1,1 @@
+import{B as a,g as m}from"./app-B58PNw_w.js";import{o as n}from"./useFlexGapSupport-CZhcM9qA.js";import{B as i,b as c}from"./Base-YC_gvb46.js";const g=()=>n(c(),["component"]),r=(o,s)=>{let{slots:p,attrs:t}=s;const e=a(a(a({},o),{component:"div"}),t);return m(i,e,p)};r.displayName="ATypographyParagraph";r.inheritAttrs=!1;r.props=g();export{r as P};

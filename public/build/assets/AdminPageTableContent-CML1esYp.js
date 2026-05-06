@@ -1,0 +1,1 @@
+import{_ as n,d as o,c as s,r as t,o as a}from"./app-B58PNw_w.js";const r=o({props:{isPageTableContent:{default:!0}},setup(){return{}}}),d={key:0,class:"dashboard-page-content-container"};function c(e,l,p,i,f,u){return e.isPageTableContent?(a(),s("div",d,[t(e.$slots,"default")])):t(e.$slots,"default",{key:1})}const m=n(r,[["render",c]]);export{m as default};
