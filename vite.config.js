@@ -13,6 +13,8 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd());
 
     return {
+        base:"build",
+
         css: {
             preprocessorOptions: {
                 less: {
@@ -26,6 +28,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             laravel({
                 input: ["resources/js/app.js"],
+                buildDirectory: "build",
             }),
             vue({
                 template: {
