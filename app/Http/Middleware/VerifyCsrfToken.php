@@ -12,12 +12,14 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        "/download-percentage",
-        '/save-authorize-invoices',
-        '/save-stripe-invoices',
-        '/save-paypal-invoices',
-        '/save-razorpay-invoices',
-        '/save-paystack-invoices',
-        "langs/download/*"
+        'payments/aamarpay/success',
+        'payments/aamarpay/callback',
+        'payments/tap/success',
+        'payments/tap/callback',
+        'payments/benefit/success',
+        'payments/benefit/callback',
+        'payments/easebuzz/success',
+        'payments/easebuzz/callback',
+        'payments/paytabs/callback'
     ];
 }

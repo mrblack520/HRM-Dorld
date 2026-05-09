@@ -2,37 +2,46 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Award extends BaseModel
 {
-    protected $table = 'awards';
+    use HasFactory;
 
-    protected $default = ['xid', 'name', 'active', 'description', 'award_price'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id', 'company_id', 'created_by'];
-
-    protected $appends = ['xid', 'x_company_id', 'x_created_by'];
-
-    protected $filterable = ['name'];
-
-    protected $hashableGetterFunctions = [
-        'getXCompanyIdAttribute' => 'company_id',
-        'getXCreatedByAttribute' => 'created_by',
+    protected $fillable = [
+        'employee_id',
+        'award_type_id',
+        'award_date',
+        'gift',
+        'monetary_value',
+        'description',
+        'certificate',
+        'photo',
+        'created_by'
     ];
 
-    protected $casts = [
-        'active' => 'integer',
-        'award_price' => 'double'
-    ];
-
-    protected static function boot()
+    /**
+     * Get the employee that received this award.
+     */
+    public function employee()
     {
-        parent::boot();
+        return $this->belongsTo(User::class, 'employee_id');
+    }
 
-        static::addGlobalScope(new CompanyScope);
+    /**
+     * Get the award type of this award.
+     */
+    public function awardType()
+    {
+        return $this->belongsTo(AwardType::class);
+    }
+
+    /**
+     * Get the user who created this award.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

@@ -2,33 +2,66 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Holiday extends BaseModel
 {
-    protected $table = 'holidays';
+    use HasFactory;
 
-    protected $default = ['xid', 'name', 'year', 'date', 'created_by', 'month', 'is_half_day', 'half_holiday'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid'];
-
-    protected $filterable = ['name', 'year', 'month', 'is_weekend'];
-
-    protected $casts = [
-        'is_deletable' => 'integer',
-        'date'  => 'date:Y-m-d',
-        'is_half_day' => 'integer',
+    protected $fillable = [
+        'name',
+        'start_date',
+        'end_date',
+        'category',
+        'description',
+        'is_recurring',
+        'is_paid',
+        'is_half_day',
+        'created_by'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_recurring' => 'boolean',
+        'is_paid' => 'boolean',
+        'is_half_day' => 'boolean',
+    ];
 
-        static::addGlobalScope(new CompanyScope);
+    /**
+     * Get the user who created this holiday.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the branches associated with this holiday.
+     */
+    public function branches()
+    {
+        return $this->belongsToMany(Branch::class, 'holiday_branch');
+    }
+
+    /**
+     * Check if the holiday is a multi-day holiday.
+     */
+    public function isMultiDay()
+    {
+        return $this->end_date && $this->end_date->ne($this->start_date);
+    }
+
+    /**
+     * Get the duration of the holiday in days.
+     */
+    public function getDurationInDays()
+    {
+        if (!$this->end_date || $this->end_date->eq($this->start_date)) {
+            return 1;
+        }
+
+        return $this->start_date->diffInDays($this->end_date) + 1;
     }
 }

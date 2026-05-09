@@ -2,75 +2,71 @@
 
 namespace App\Models;
 
-use App\Casts\Hash;
-use App\Classes\Common;
-
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Complaint extends BaseModel
 {
-    protected $table = 'complaints';
+    use HasFactory;
 
-    protected $default = ['xid', 'title', 'status', 'description', 'proff_of_document', 'reply_notes'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id', 'from_user_id', 'to_user_id', 'manager_id', 'letterhead_template_id', 'generates_id',];
-
-    protected $appends = ['xid', 'x_from_user_id', 'x_to_user_id', 'proff_of_document_url', 'x_manager_id', 'x_letterhead_template_id', 'x_generates_id',];
-
-    protected $filterable = ['title'];
-
-    protected $hashableGetterFunctions = [
-        'getXFromUserIdAttribute' => 'from_user_id',
-        'getXToUserIdAttribute' => 'to_user_id',
-        'getXManagerIdAttribute' => 'manager_id',
-        'getXLetterheadTemplateIdAttribute' => 'letterhead_template_id',
-        'getXGeneratesIdAttribute' => 'generates_id',
-
+    protected $fillable = [
+        'employee_id',
+        'against_employee_id',
+        'complaint_type',
+        'subject',
+        'complaint_date',
+        'description',
+        'status',
+        'documents',
+        'is_anonymous',
+        'assigned_to',
+        'resolution_deadline',
+        'investigation_notes',
+        'resolution_action',
+        'resolution_date',
+        'follow_up_action',
+        'follow_up_date',
+        'feedback',
+        'created_by'
     ];
 
     protected $casts = [
-        'from_user_id' => Hash::class . ':hash',
-        'to_user_id' => Hash::class . ':hash',
-        'manager_id' => Hash::class . ':hash',
-        'letterhead_template_id' => Hash::class . ':hash',
-        'generates_id' => Hash::class . ':hash',
-        'date_time' => 'datetime'
+        'complaint_date' => 'date',
+        'resolution_deadline' => 'date',
+        'resolution_date' => 'date',
+        'follow_up_date' => 'date',
+        'is_anonymous' => 'boolean',
     ];
 
-    protected static function boot()
+    /**
+     * Get the employee who filed the complaint.
+     */
+    public function employee()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(User::class, 'employee_id');
     }
 
-    public function fromStaff()
+    /**
+     * Get the employee against whom the complaint was filed.
+     */
+    public function againstEmployee()
     {
-        return $this->belongsTo(StaffMember::class, 'from_user_id', 'id');
+        return $this->belongsTo(User::class, 'against_employee_id');
     }
 
-    public function toStaff()
+    /**
+     * Get the user who is assigned to handle this complaint.
+     */
+    public function assignedUser()
     {
-        return $this->belongsTo(StaffMember::class, 'to_user_id', 'id');
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    public function letterHeadTemplate()
+    /**
+     * Get the user who created this complaint.
+     */
+    public function creator()
     {
-        return $this->belongsTo(LetterHeadTemplate::class, 'letterhead_template_id', 'id');
-    }
-
-    public function generate()
-    {
-        return $this->belongsTo(Generate::class, 'generates_id', 'id');
-    }
-
-    public function getProffOfDocumentUrlAttribute()
-    {
-        $proffOfDocumentPath = Common::getFolderPath('proffOfDocumentPath');
-
-        return $this->proff_of_document == null ? asset('images/complaint.png') : Common::getFileUrl($proffOfDocumentPath, $this->proff_of_document);
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

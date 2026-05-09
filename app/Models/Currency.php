@@ -2,31 +2,19 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Model;
 
-class Currency extends BaseModel
+class Currency extends Model
 {
-    protected $table = 'currencies';
-
-    protected $default = ['xid', 'name', 'symbol'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid'];
-
-    protected $filterable = ['name'];
-
-    protected $casts = [
-        'is_deletable' => 'integer',
+    protected $fillable = [
+        'name',
+        'code',
+        'symbol',
+        'description',
+        'is_default'
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
-    }
+    
+    protected $casts = [
+        'is_default' => 'boolean'
+    ];
 }

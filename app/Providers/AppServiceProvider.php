@@ -2,32 +2,42 @@
 
 namespace App\Providers;
 
-use Laravel\Cashier\Cashier;
+use App\Models\User;
+use App\Models\Plan;
+use App\Observers\UserObserver;
+use App\Observers\PlanObserver;
+use App\Providers\AssetServiceProvider;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
-        Schema::defaultStringLength(191);
-
-        // Cashier::ignoreMigrations();
-
-        if (app_type() == 'saas') {
-            Cashier::useSubscriptionModel(\App\SuperAdmin\Models\Subscription::class);
-        }
+        $this->app->singleton(\App\Services\WebhookService::class);
+        
+        // Register our AssetServiceProvider
+        $this->app->register(AssetServiceProvider::class);
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot() {}
+    public function boot(): void
+    {
+        // Register the UserObserver
+        User::observe(UserObserver::class);
+        
+        // Register the PlanObserver
+        Plan::observe(PlanObserver::class);
+
+        // Configure dynamic storage disks
+        try {
+            // \App\Services\DynamicStorageService::configureDynamicDisks();
+        } catch (\Exception $e) {
+            // Silently fail during migrations or when database is not ready
+        }
+    }
 }

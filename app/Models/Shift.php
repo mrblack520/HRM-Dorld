@@ -2,46 +2,85 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Shift extends BaseModel
 {
-    protected $table = 'shifts';
+    use HasFactory;
 
-    protected $default = ['xid', 'name', 'clock_in_time', 'clock_out_time', 'late_mark_after', 'early_clock_in_time', 'allow_clock_out_till', 'self_clocking', 'allowed_ip_address', 'is_next_day'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id',];
-
-    protected $appends = ['xid', 'employee_count'];
-
-    protected $filterable = ['name'];
-
-    protected $casts = [
-        'allowed_ip_address' => 'json',
-        'late_mark_after' => 'integer',
-        'self_clocking' => 'integer',
-        'early_clock_in_time' => 'integer',
-        'allow_clock_out_till' => 'integer',
-        'capture_location' => 'integer',
+    protected $fillable = [
+        'name',
+        'description',
+        'start_time',
+        'end_time',
+        'break_duration',
+        'break_start_time',
+        'break_end_time',
+        'grace_period',
+        'is_night_shift',
+        'status',
+        'created_by'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    protected $casts = [
+        'is_night_shift' => 'boolean',
+    ];
 
-        static::addGlobalScope(new CompanyScope);
+    /**
+     * Get the user who created the shift.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
-
-    public function getEmployeeCountAttribute()
+    
+    /**
+     * Calculate working hours for this shift.
+     */
+    public function getWorkingHoursAttribute()
     {
-        $employeeCount = StaffMember::where('shift_id', $this->id)
-            ->count();
-
-        return [
-            'employee_count' => $employeeCount,
-        ];
+        $start = \Carbon\Carbon::parse($this->start_time);
+        $end = \Carbon\Carbon::parse($this->end_time);
+        
+        // Handle night shifts
+        if ($this->is_night_shift && $end->lt($start)) {
+            $end->addDay();
+        }
+        
+        $totalMinutes = abs($end->diffInMinutes($start)) - $this->break_duration;
+        return round(max(0, $totalMinutes) / 60, 2);
+    }
+    
+    /**
+     * Format start time for frontend (H:i format).
+     */
+    public function getStartTimeAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value)->format('H:i') : null;
+    }
+    
+    /**
+     * Format end time for frontend (H:i format).
+     */
+    public function getEndTimeAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value)->format('H:i') : null;
+    }
+    
+    /**
+     * Format break start time for frontend (H:i format).
+     */
+    public function getBreakStartTimeAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value)->format('H:i') : null;
+    }
+    
+    /**
+     * Format break end time for frontend (H:i format).
+     */
+    public function getBreakEndTimeAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value)->format('H:i') : null;
     }
 }

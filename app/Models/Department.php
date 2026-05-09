@@ -2,48 +2,47 @@
 
 namespace App\Models;
 
-use App\Casts\Hash;
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Department extends BaseModel
 {
-    protected $table = 'departments';
+    use HasFactory;
 
-    protected $default = ['xid', 'name'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id', 'created_by'];
-
-    protected $appends = ['xid', 'x_created_by', 'employee_count'];
-
-    protected $filterable = ['name'];
-
-    protected $hashableGetterFunctions = [
-        'getXCreatedByAttribute' => 'created_by',
+    protected $fillable = [
+        'name',
+        'branch_id',
+        'description',
+        'status',
+        'created_by'
     ];
 
-    protected $casts = [
-        'is_deletable' => 'integer',
-        'created_by' => Hash::class . ':hash',
-    ];
-
-    protected static function boot()
+    /**
+     * Get the branch that owns the department.
+     */
+    public function branch()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(Branch::class);
     }
 
-    public function getEmployeeCountAttribute()
+    /**
+     * Get the user who created the department.
+     */
+    public function creator()
     {
-        $employeeCount = StaffMember::where('department_id', $this->id)
-            ->count();
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
-        return [
-            'employee_count' => $employeeCount,
-        ];
+    /**
+     * Get the employees assigned to this department.
+     */
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    public function desginations()
+    {
+        return $this->hasMany(Designation::class,'department_id','id');
     }
 }

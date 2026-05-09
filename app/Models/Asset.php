@@ -2,94 +2,116 @@
 
 namespace App\Models;
 
-use App\Casts\Hash;
-
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
-use App\Classes\Common;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Asset extends BaseModel
 {
-    protected $table = 'assets';
+    use HasFactory;
 
-    protected $default = ['xid', 'name', 'image', 'serial_number', 'description'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at', 'old_account_id'];
-
-    protected $hidden = ['id', 'location_id', 'user_id', 'asset_type_id', 'asset_user_id', 'account_id', 'broken_by'];
-
-    protected $appends = ['xid', 'x_location_id', 'image_url', 'x_user_id', 'x_asset_type_id', 'x_asset_user_id', 'x_account_id', 'x_broken_by'];
-
-    protected $filterable = ['name'];
-
-    protected $hashableGetterFunctions = [
-        'getXLocationIdAttribute' => 'location_id',
-        'getXUserIdAttribute' => 'user_id',
-        'getXAssetTypeIdAttribute' => 'asset_type_id',
-        'getXAssetUserIdAttribute' => 'asset_user_id',
-        'getXAccountIdAttribute' => 'account_id',
-        'getXBrokenByAttribute' => 'broken_by',
+    protected $fillable = [
+        'name',
+        'asset_type_id',
+        'serial_number',
+        'asset_code',
+        'purchase_date',
+        'purchase_cost',
+        'status',
+        'condition',
+        'description',
+        'location',
+        'supplier',
+        'warranty_info',
+        'warranty_expiry_date',
+        'images',
+        'documents',
+        'qr_code',
+        'created_by'
     ];
-
-    protected $permissions = ['account_view', 'assets_view'];
 
     protected $casts = [
-        'location_id' => Hash::class . ':hash',
-        'user_id' => Hash::class . ':hash',
-        'asset_type_id' => Hash::class . ':hash',
-        'asset_user_id' => Hash::class . ':hash',
-        'account_id' => Hash::class . ':hash',
-        'broken_by' => Hash::class . ':hash',
-        'purchase_date' => 'datetime',
-        'price' => 'double',
+        'purchase_date' => 'date',
+        'warranty_expiry_date' => 'date',
+        'purchase_cost' => 'decimal:2',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
-    }
-
-    public function getImageUrlAttribute()
-    {
-        $assetImagePath = Common::getFolderPath('assetImagePath');
-
-        return $this->image == null ? asset('images/asset.png') : Common::getFileUrl($assetImagePath, $this->image);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(StaffMember::class, 'user_id', 'id');
-    }
-
+    /**
+     * Get the asset type of this asset.
+     */
     public function assetType()
     {
-        return $this->belongsTo(AssetType::class, 'asset_type_id', 'id');
+        return $this->belongsTo(AssetType::class);
     }
 
-    public function location()
+    /**
+     * Get the user who created this asset.
+     */
+    public function creator()
     {
-        return $this->belongsTo(Location::class, 'location_id', 'id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function account()
+    /**
+     * Get the assignments for this asset.
+     */
+    public function assignments()
     {
-        return $this->belongsTo(Account::class, 'account_id', 'id');
+        return $this->hasMany(AssetAssignment::class);
     }
 
-    public function assetUser()
+    /**
+     * Get the current assignment for this asset.
+     */
+    public function currentAssignment()
     {
-        return $this->hasMany(AssetUser::class, 'asset_id', 'id');
+        return $this->hasOne(AssetAssignment::class)->whereNull('checkin_date')->latest();
     }
 
-    public function brokenBy()
+    /**
+     * Get the maintenances for this asset.
+     */
+    public function maintenances()
     {
-        return $this->hasOne(StaffMember::class, 'id', 'broken_by');
+        return $this->hasMany(AssetMaintenance::class);
     }
 
-    public function return()
+    /**
+     * Get the depreciation for this asset.
+     */
+    public function depreciation()
     {
-        return $this->belongsTo(AssetUser::class, 'asset_user_id', 'id');
+        return $this->hasOne(AssetDepreciation::class);
+    }
+
+    /**
+     * Scope a query to only include available assets.
+     */
+    public function scopeAvailable($query)
+    {
+        return $query->where('status', 'available');
+    }
+
+    /**
+     * Scope a query to only include assigned assets.
+     */
+    public function scopeAssigned($query)
+    {
+        return $query->where('status', 'assigned');
+    }
+
+    /**
+     * Scope a query to only include assets under maintenance.
+     */
+    public function scopeUnderMaintenance($query)
+    {
+        return $query->where('status', 'under_maintenance');
+    }
+
+    /**
+     * Scope a query to only include disposed assets.
+     */
+    public function scopeDisposed($query)
+    {
+        return $query->where('status', 'disposed');
     }
 }

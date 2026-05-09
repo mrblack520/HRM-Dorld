@@ -2,47 +2,32 @@
 
 namespace App\Models;
 
-use App\Casts\Hash;
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Designation extends BaseModel
 {
-    protected $table = 'designations';
+    use HasFactory;
 
-    protected $default = ['xid', 'name'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid', 'employee_count'];
-
-    protected $filterable = ['name'];
-
-    protected $hashableGetterFunctions = [
-        'getXCreatedByIdAttribute' => 'created_by',
+    protected $fillable = [
+        'name',
+        'description',
+        'department_id',
+        'status',
+        'created_by',
     ];
 
     protected $casts = [
-        'is_deletable' => 'integer',
-        'created_by' => Hash::class . ':hash',
+        'status' => 'string',
     ];
 
-    protected static function boot()
+    public function company()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(User::class, 'company_id');
     }
 
-    public function getEmployeeCountAttribute()
+    public function department()
     {
-        $employeeCount = StaffMember::where('designation_id', $this->id)
-            ->count();
-
-        return [
-            'employee_count' => $employeeCount,
-        ];
+        return $this->belongsTo(Department::class);
     }
 }

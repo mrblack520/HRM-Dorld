@@ -2,29 +2,32 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class AssetType extends BaseModel
 {
-    protected $table = 'asset_types';
+    use HasFactory;
 
-    protected $default = ['xid', 'name'];
+    protected $fillable = [
+        'name',
+        'description',
+        'created_by'
+    ];
 
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid'];
-
-    protected $filterable = ['name'];
-
-    protected static function boot()
+    /**
+     * Get the user who created this asset type.
+     */
+    public function creator()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-
+    /**
+     * Get the assets of this type.
+     */
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }

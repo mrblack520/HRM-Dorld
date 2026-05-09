@@ -2,19 +2,15 @@
 
 namespace App\Models;
 
-use App\Traits\EntrustPermissionTrait;
 
-class Permission extends BaseModel
+class Permission extends BaseSpatiePermission
 {
-    use EntrustPermissionTrait;
-
-    protected $table = 'permissions';
-
-    protected $default = ['xid', 'name', 'display_name'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id', 'pivot'];
-
-    protected $appends = ['xid'];
+    protected $fillable = [
+        'module',
+        'name',
+        'label',
+        'description',
+        'is_active',
+        'guard_name'
+    ];
 }

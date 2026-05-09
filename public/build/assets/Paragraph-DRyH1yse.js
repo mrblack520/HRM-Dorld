@@ -1,1 +1,0 @@
-import{B as a,g as m}from"./app-CSe-KdZ0.js";import{o as n}from"./useFlexGapSupport-B5jWjdPi.js";import{B as i,b as c}from"./Base-y1Nav_QM.js";const g=()=>n(c(),["component"]),r=(o,s)=>{let{slots:p,attrs:t}=s;const e=a(a(a({},o),{component:"div"}),t);return m(i,e,p)};r.displayName="ATypographyParagraph";r.inheritAttrs=!1;r.props=g();export{r as P};

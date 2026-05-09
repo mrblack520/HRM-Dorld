@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\File;
+use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
-Artisan::command('app-version', function () {
-    $this->comment(File::get(public_path() . '/version.txt'));
-})->purpose('Display current version of app');
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');

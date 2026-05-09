@@ -2,72 +2,186 @@
 
 namespace Database\Seeders;
 
-use App\Classes\CommonHrm;
-use App\Models\Company;
 use App\Models\Holiday;
 use App\Models\User;
-use App\Observers\HolidayObserver;
-use App\Scopes\CompanyScope;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Branch;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class HolidaySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-
-    public function run()
+    public function run(): void
     {
-        Model::unguard();
+        // Get all companies
+        $companies = User::where('type', 'company')->get();
 
-        DB::table('holidays')->delete();
-
-        DB::statement('ALTER TABLE holidays AUTO_INCREMENT = 1');
-
-        $company = Company::with(['currency' => function ($query) {
-            return $query->withoutGlobalScope(CompanyScope::class);
-        }, 'subscriptionPlan'])->where('is_global', 0)->first();
-
-        $user = User::where('company_id', $company->id)->where('status', 'active')->first();
-
-        // Manually Dispatch Events
-        Holiday::observe(HolidayObserver::class);
-
-        $year = Carbon::now()->year;
-        $allHolidays = [
-            ['name' => 'New Year', 'year' => $year, 'month' => 1, 'date' => $year . '-01-01', 'created_by' => $user->id],
-            ['name' => 'Makar Sankranti', 'year' => $year, 'month' => 1, 'date' => $year . '-01-14', 'created_by' => $user->id],
-            ['name' => 'Maha Shivratri', 'year' => $year, 'month' => 2, 'date' => $year . '-02-26', 'created_by' => $user->id],
-            ['name' => 'Holi', 'year' => $year, 'month' => 3, 'date' => $year . '-03-14', 'created_by' => $user->id],
-            ['name' => 'Labour Day', 'year' => $year, 'month' => 5, 'date' => $year . '-05-01', 'created_by' => $user->id],
-            ['name' => 'Raksha Bandhan', 'year' => $year, 'month' => 8, 'date' => $year . '-08-09', 'created_by' => $user->id],
-            ['name' => 'Independence Day', 'year' => $year, 'month' => 8, 'date' => $year . '-08-15', 'created_by' => $user->id],
-            ['name' => 'Ganesh Chaturthi', 'year' => $year, 'month' => 8, 'date' => $year . '-08-27', 'created_by' => $user->id],
-            ['name' => 'Mahatma Gandhi / Dussehra', 'year' => $year, 'month' => 10, 'date' => $year . '-10-02', 'created_by' => $user->id],
-            ['name' => 'Diwali', 'year' => $year, 'month' => 10, 'date' => $year . '-10-20', 'created_by' => $user->id],
-            ['name' => 'Diwali', 'year' => $year, 'month' => 10, 'date' => $year . '-10-21', 'created_by' => $user->id],
-            ['name' => 'Govardhan Puja', 'year' => $year, 'month' => 10, 'date' => $year . '-10-22', 'created_by' => $user->id],
-            ['name' => 'Bhai Duj', 'year' => $year, 'month' => 10, 'date' => $year . '-10-23', 'created_by' => $user->id],
-            ['name' => 'Christmas', 'year' => $year, 'month' => 12, 'date' => $year . '-12-25', 'created_by' => $user->id],
-        ];
-
-        foreach ($allHolidays as $allHoliday) {
-            Holiday::create($allHoliday);
+        if ($companies->isEmpty()) {
+            $this->command->warn('No company users found. Please run DefaultCompanySeeder first.');
+            return;
         }
 
-        // Mark Weekend
-        $startDate = $year . '-01-01';
-        $endDate = $year . '-12-31';
-        $ocassionName = 'Sunday';
-        $markDayName = ['Sunday'];
-        $isHalfDay = 0;
-        $halfHoliday = 'before_break';
+        $currentYear = date('Y');
+        
+        // Fixed holidays for consistent data
+        $holidays = [
+            [
+                'name' => 'New Year\'s Day',
+                'start_date' => $currentYear . '-01-01',
+                'end_date' => null,
+                'category' => 'National',
+                'description' => 'Celebration of the beginning of the new calendar year',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Republic Day',
+                'start_date' => $currentYear . '-01-26',
+                'end_date' => null,
+                'category' => 'National',
+                'description' => 'Commemorates the adoption of the Constitution of India',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Independence Day',
+                'start_date' => $currentYear . '-08-15',
+                'end_date' => null,
+                'category' => 'National',
+                'description' => 'Celebrates the independence from British colonial rule',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Gandhi Jayanti',
+                'start_date' => $currentYear . '-10-02',
+                'end_date' => null,
+                'category' => 'National',
+                'description' => 'Birthday of Mahatma Gandhi, Father of the Nation',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Diwali',
+                'start_date' => $currentYear . '-11-01',
+                'end_date' => null,
+                'category' => 'Religious',
+                'description' => 'Festival of lights celebrated by Hindu, Sikh, and Jain communities',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Holi',
+                'start_date' => $currentYear . '-03-25',
+                'end_date' => null,
+                'category' => 'Religious',
+                'description' => 'Festival of colors celebrating the arrival of spring',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Eid al-Fitr',
+                'start_date' => $currentYear . '-04-10',
+                'end_date' => null,
+                'category' => 'Religious',
+                'description' => 'Islamic festival marking the end of Ramadan fasting period',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Christmas Day',
+                'start_date' => $currentYear . '-12-25',
+                'end_date' => null,
+                'category' => 'Religious',
+                'description' => 'Christian festival celebrating the birth of Jesus Christ',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Good Friday',
+                'start_date' => $currentYear . '-03-29',
+                'end_date' => null,
+                'category' => 'Religious',
+                'description' => 'Christian observance commemorating the crucifixion of Jesus Christ',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Company Foundation Day',
+                'start_date' => $currentYear . '-06-15',
+                'end_date' => null,
+                'category' => 'Company Specific',
+                'description' => 'Annual celebration of company establishment and achievements',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Annual Team Outing',
+                'start_date' => $currentYear . '-09-20',
+                'end_date' => $currentYear . '-09-21',
+                'category' => 'Company Specific',
+                'description' => 'Two-day company team building and recreational activities',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => false
+            ],
+            [
+                'name' => 'Employee Appreciation Day',
+                'start_date' => $currentYear . '-05-10',
+                'end_date' => null,
+                'category' => 'Company Specific',
+                'description' => 'Special day to recognize and appreciate employee contributions',
+                'is_recurring' => true,
+                'is_paid' => true,
+                'is_half_day' => true
+            ]
+        ];
 
-        CommonHrm::markWeekend($markDayName, $startDate, $endDate, $ocassionName, $isHalfDay, $halfHoliday);
+        foreach ($companies as $company) {
+            // Get branches for this company
+            $branches = Branch::where('created_by', $company->id)->get();
+
+            foreach ($holidays as $holidayData) {
+                // Check if holiday already exists for this company
+                if (Holiday::where('name', $holidayData['name'])->where('created_by', $company->id)->exists()) {
+                    continue;
+                }
+
+                try {
+                    $holiday = Holiday::create([
+                        'name' => $holidayData['name'],
+                        'start_date' => $holidayData['start_date'],
+                        'end_date' => $holidayData['end_date'],
+                        'category' => $holidayData['category'],
+                        'description' => $holidayData['description'],
+                        'is_recurring' => $holidayData['is_recurring'],
+                        'is_paid' => $holidayData['is_paid'],
+                        'is_half_day' => $holidayData['is_half_day'],
+                        'created_by' => $company->id,
+                    ]);
+
+                    // Attach holiday to all branches of the company
+                    if ($branches->isNotEmpty()) {
+                        $holiday->branches()->attach($branches->pluck('id'));
+                    }
+                } catch (\Exception $e) {
+                    $this->command->error('Failed to create holiday: ' . $holidayData['name'] . ' for company: ' . $company->name);
+                    continue;
+                }
+            }
+        }
+
+        $this->command->info('Holiday seeder completed successfully!');
     }
 }

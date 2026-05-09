@@ -2,35 +2,70 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SalaryComponent extends BaseModel
 {
-    protected $table = 'salary_components';
+    use HasFactory;
 
-    protected $default = ['xid', 'name'];
+    protected $fillable = [
+        'name',
+        'description',
+        'type',
+        'calculation_type',
+        'default_amount',
+        'percentage_of_basic',
+        'is_taxable',
+        'is_mandatory',
+        'status',
+        'created_by'
+    ];
 
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $casts = [
+        'default_amount' => 'decimal:2',
+        'percentage_of_basic' => 'decimal:2',
+        'is_taxable' => 'boolean',
+        'is_mandatory' => 'boolean',
+    ];
 
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid'];
-
-    protected $filterable = ['name'];
-
-    protected static function boot()
+    /**
+     * Get the user who created the component.
+     */
+    public function creator()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(User::class, 'created_by');
     }
-    public function salaryGroupComponents()
+
+    /**
+     * Calculate component amount based on basic salary.
+     */
+    public function calculateAmount($basicSalary = 0)
     {
-        return $this->hasMany(SalaryGroupComponent::class, 'salary_component_id', 'id');
+        if ($this->calculation_type === 'percentage' && $this->percentage_of_basic) {
+            return ($basicSalary * $this->percentage_of_basic) / 100;
+        }
+        
+        return $this->default_amount;
     }
-    public function salaryComponent()
+
+    /**
+     * Get earnings components.
+     */
+    public static function getEarnings()
     {
-        return $this->belongsTo(BasicSalaryDetails::class, 'id', 'salary_component_id');
+        return static::where('type', 'earning')
+            ->where('status', 'active')
+            ->get();
+    }
+
+    /**
+     * Get deductions components.
+     */
+    public static function getDeductions()
+    {
+        return static::where('type', 'deduction')
+            ->where('status', 'active')
+            ->get();
     }
 }

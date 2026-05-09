@@ -3,68 +3,35 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Examyou\RestAPI\Exceptions\UnauthorizedException;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermission
 {
-
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (auth('api')->check()) {
-            $user = auth('api')->user();
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
 
-            $resourceRequests = ['index', 'store', 'update', 'show', 'destroy'];
-            $urlArray = explode('.', $request->route()->action['as']);
-            $resourceRequestString = $urlArray[2];
+        $user = auth()->user();
+        
+        // Super admin has all permissions
+        if ($user->type === 'superadmin' || $user->type === 'super admin') {
+            return $next($request);
+        }
 
-            if ($urlArray && $urlArray[1]) {
-                $routePathString = str_replace('-', '_', $urlArray[1]);
+        // Check if user has the required permission
+        if (!$user->hasPermissionTo($permission)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
             }
-
-            // Those route for which we don't want to check permission
-            // We will check permission for those on controller level
-            $skipResourcePath = ['get_assigned_survey'];
-
-            if (in_array($resourceRequestString, $resourceRequests) && in_array($routePathString, $skipResourcePath) === false) {
-
-                // Lang resource will have translations permission
-                if ($routePathString == 'langs') {
-                    $routePathString = "translations";
-                } else if ($routePathString == 'get_all_transitions') {
-                    $routePathString = "accounts";
-                }
-
-                $permission = "";
-                $requestFields = $request->fields;
-
-                if (($resourceRequestString == 'index' || $resourceRequestString == 'show')) {
-                    if ($requestFields == null) {
-                        // If no fields params is passed in index request
-                        config(['api.defaultLimit' => 10000]);
-                    } else {
-                        $permission = $routePathString . '_view';
-                    }
-                }
-
-                if ($resourceRequestString == 'store') {
-                    $permission = $routePathString . '_create';
-                } else if ($resourceRequestString == 'update') {
-                    $permission = $routePathString . '_edit';
-                } else if ($resourceRequestString == 'destroy') {
-                    $permission = $routePathString . '_delete';
-                }
-
-                if ($permission != "" && !$user->ability('admin', $permission)) {
-                    throw new UnauthorizedException("Don't have valid permission");
-                }
-            }
+            
+            // Redirect to first available page
+            return redirect()->route('dashboard.redirect');
         }
 
         return $next($request);

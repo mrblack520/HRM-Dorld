@@ -2,56 +2,75 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Scopes\CompanyScope;
-use App\Casts\Hash;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Warning extends BaseModel
 {
-    protected $table = 'warnings';
+    use HasFactory;
 
-    protected $default = ['xid', 'title', 'description', 'warning_date'];
-
-    protected $guarded = ['id', 'manager_id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id', 'user_id', 'letterhead_template_id', 'generates_id',];
-
-    protected $appends = ['xid', 'x_user_id', 'x_letterhead_template_id', 'x_generates_id',];
-
-    protected $filterable = ['title'];
+    protected $fillable = [
+        'employee_id',
+        'warning_by',
+        'warning_type',
+        'subject',
+        'severity',
+        'warning_date',
+        'description',
+        'status',
+        'documents',
+        'acknowledgment_date',
+        'employee_response',
+        'approved_by',
+        'approved_at',
+        'expiry_date',
+        'has_improvement_plan',
+        'improvement_plan_goals',
+        'improvement_plan_start_date',
+        'improvement_plan_end_date',
+        'improvement_plan_progress',
+        'created_by'
+    ];
 
     protected $casts = [
-        'user_id' => Hash::class . ':hash',
-        'letterhead_template_id' => Hash::class . ':hash',
-        'generates_id' => Hash::class . ':hash',
-        'warning_date' => 'datetime',
+        'warning_date' => 'date',
+        'acknowledgment_date' => 'date',
+        'approved_at' => 'datetime',
+        'expiry_date' => 'date',
+        'has_improvement_plan' => 'boolean',
+        'improvement_plan_start_date' => 'date',
+        'improvement_plan_end_date' => 'date',
     ];
 
-    protected $hashableGetterFunctions = [
-        'getXUserIdAttribute' => 'user_id',
-        'getXLetterheadTemplateIdAttribute' => 'letterhead_template_id',
-        'getXGeneratesIdAttribute' => 'generates_id',
-    ];
-
-    protected static function boot()
+    /**
+     * Get the employee who received this warning.
+     */
+    public function employee()
     {
-        parent::boot();
-
-        static::addGlobalScope(new CompanyScope);
+        return $this->belongsTo(User::class, 'employee_id');
     }
 
-    public function user()
+    /**
+     * Get the user who issued this warning.
+     */
+    public function issuer()
     {
-        return $this->belongsTo(StaffMember::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'warning_by');
     }
 
-    public function letterHeadTemplate()
+    /**
+     * Get the user who approved this warning.
+     */
+    public function approver()
     {
-        return $this->belongsTo(LetterHeadTemplate::class, 'letterhead_template_id', 'id');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
-    public function generate()
+    /**
+     * Get the user who created this warning.
+     */
+    public function creator()
     {
-        return $this->belongsTo(Generate::class, 'generates_id', 'id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

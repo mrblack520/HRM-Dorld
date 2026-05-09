@@ -2,16 +2,15 @@
 
 return [
 
-    /**
+    /*
      *
      * Shared translations.
      *
      */
-    'title' => 'Laravel Installer',
+    'title' => 'Project Setup',
     'next' => 'Volgende stap',
 
-
-    /**
+    /*
      *
      * Home page translations.
      *
@@ -21,8 +20,7 @@ return [
         'message' => 'Welkom bij de installatiewizard',
     ],
 
-
-    /**
+    /*
      *
      * Requirements page translations.
      *
@@ -31,8 +29,7 @@ return [
         'title' => 'Vereisten',
     ],
 
-
-    /**
+    /*
      *
      * Permissions page translations.
      *
@@ -41,8 +38,7 @@ return [
         'title' => 'Permissies',
     ],
 
-
-    /**
+    /*
      *
      * Environment page translations.
      *
@@ -54,8 +50,7 @@ return [
         'errors' => 'Het is niet mogelijk om een .env bestand aan te maken, maak a.u.b het bestand zelf aan.',
     ],
 
-
-    /**
+    /*
      *
      * Final page translations.
      *

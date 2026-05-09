@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
-use App\Scopes\CompanyScope;
-use App\Traits\EntrustRoleTrait;
-
-class Role extends BaseModel
+class Role extends BaseSpatieRole
 {
-    use EntrustRoleTrait;
+    protected $fillable = [
+        'name',
+        'label',
+        'description',
+        'is_active',
+        'guard_name',
+        'created_by'
+    ];
 
-    protected  $table = 'roles';
+    protected $appends = ['is_system_role'];
 
-    protected $default = ['xid', 'id', 'name', 'display_name'];
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
-    protected $hidden = ['id'];
-
-    protected $appends = ['xid'];
-
-    protected static function boot()
+    public function creator()
     {
-        parent::boot();
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
-        static::addGlobalScope(new CompanyScope);
+    /**
+     * Check if this is a system role that shouldn't be deleted
+     *
+     * @return bool
+     */
+    public function getIsSystemRoleAttribute()
+    {
+        $systemRoles = ['superadmin', 'super-admin', 'company'];
+        return in_array(strtolower($this->name), $systemRoles);
     }
 }
