@@ -8,6 +8,7 @@ use App\Observers\UserObserver;
 use App\Observers\PlanObserver;
 use App\Providers\AssetServiceProvider;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register the UserObserver
         User::observe(UserObserver::class);
+        
+          Schema::defaultStringLength(191);
         
         // Register the PlanObserver
         Plan::observe(PlanObserver::class);
